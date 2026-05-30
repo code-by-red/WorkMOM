@@ -15,14 +15,14 @@ Plataforma exclusiva de vagas home office para mães solo com automação de pag
 ├── .gitignore
 ├── .env
 ├── README.md
+├── index.html
+├── css/
+│   └── styles.css
+├── js/
+│   └── app.js
+├── server.js
 ├── database/
 │   └── schema.sql
-├── frontend/
-│   ├── index.html
-│   ├── css/
-│   │   └── styles.css
-│   └── js/
-│       └── app.js
 ├── backend/
 │   ├── package.json
 │   ├── scraper.js
@@ -41,7 +41,7 @@ Plataforma exclusiva de vagas home office para mães solo com automação de pag
 3. Instale as dependências do backend: `cd backend && npm install`
 4. Configure a Edge Function do Supabase (veja `supabase/functions/kiwify-webhook/README.md`)
 5. Execute o raspador: `node backend/scraper.js`
-6. Abra o frontend no navegador: `frontend/index.html`
+6. Abra o frontend no navegador: `index.html` ou use `node server.js`
 
 ## � Links Kiwify
 
