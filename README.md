@@ -23,10 +23,15 @@ Plataforma exclusiva de vagas home office para mães solo com automação de pag
 │   │   └── styles.css
 │   └── js/
 │       └── app.js
-└── backend/
-    ├── package.json
-    ├── scraper.js
-    └── webhook.js
+├── backend/
+│   ├── package.json
+│   ├── scraper.js
+│   └── webhook.js
+└── supabase/
+    └── functions/
+        └── kiwify-webhook/
+            ├── index.ts
+            └── README.md
 ```
 
 ## 🔧 Configuração
@@ -34,7 +39,7 @@ Plataforma exclusiva de vagas home office para mães solo com automação de pag
 1. Configure as variáveis de ambiente no arquivo `.env`
 2. Execute o script SQL no Supabase: `database/schema.sql`
 3. Instale as dependências do backend: `cd backend && npm install`
-4. Inicie o webhook: `node backend/webhook.js`
+4. Configure a Edge Function do Supabase (veja `supabase/functions/kiwify-webhook/README.md`)
 5. Execute o raspador: `node backend/scraper.js`
 6. Abra o frontend no navegador: `frontend/index.html`
 
