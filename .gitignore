@@ -5,3 +5,4 @@ config.local.js
 *.log
 dist/
 build/
+.env.example

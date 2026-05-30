@@ -11,12 +11,12 @@
 
 **SUPABASE_URL**
 ```
-https://ieuruanmrmewrdlcsepm.supabase.co
+https://sua-url-aqui.supabase.co
 ```
 
 **SUPABASE_SERVICE_ROLE_KEY**
 ```
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlldXJ1YW5tcm1ld3JkbGNzZXBtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDA5Mjc4MSwiZXhwIjoyMDk1NjY4NzgxfQ.U6zP5gXHV8PF3xsCsHZLbx068tqf3y3rK7h-FPJq67s
+sua-chave-secreta-master-aqui
 ```
 
 ## Como Funciona
