@@ -10,67 +10,7 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
 let isPremium = false;
-let isDevMode = false;
 let allJobs = [];
-
-// Dados mockados para modo de demonstração
-const MOCK_JOBS = [
-    {
-        id: '1',
-        titulo: 'Analista de Customer Success - Home Office',
-        empresa: 'TechStartup Brasil',
-        link_original: 'https://example.com/vaga1',
-        detalhes: 'Buscamos analista experiente para atender clientes B2B. Horário flexível e ambiente colaborativo.',
-        is_premium: true,
-        tags: ['Home Office', 'Horário Flexível'],
-        beneficios: ['Auxílio Home Office', 'Horário Flexível'],
-        created_at: new Date().toISOString()
-    },
-    {
-        id: '2',
-        titulo: 'Desenvolvedora Frontend - Remoto',
-        empresa: 'Digital Agency',
-        link_original: 'https://example.com/vaga2',
-        detalhes: 'Oportunidade para desenvolvedora React com experiência em projetos e-commerce.',
-        is_premium: true,
-        tags: ['Remoto', 'Auxílio Creche'],
-        beneficios: ['Auxílio Creche', 'Seguro de Vida'],
-        created_at: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString() // 25 horas atrás
-    },
-    {
-        id: '3',
-        titulo: 'Assistente Virtual - Meio Período',
-        empresa: 'Consultoria RH',
-        link_original: 'https://example.com/vaga3',
-        detalhes: 'Precisamos de assistente para agendamentos e organização de agenda. 20h semanais.',
-        is_premium: false,
-        tags: ['Meio Período', 'Home Office'],
-        beneficios: ['Horário Flexível'],
-        created_at: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString() // 72 horas atrás
-    },
-    {
-        id: '4',
-        titulo: 'Redatora de Conteúdo - Remoto',
-        empresa: 'Blog Tech',
-        link_original: 'https://example.com/vaga4',
-        detalhes: 'Produção de conteúdo sobre tecnologia e inovação. Experiência com SEO.',
-        is_premium: false,
-        tags: ['Remoto', 'Home Office'],
-        beneficios: ['Home Office', 'Bonificação por produção'],
-        created_at: new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString() // 96 horas atrás
-    },
-    {
-        id: '5',
-        titulo: 'Coordenadora de Projetos - Home Office',
-        empresa: 'Empresa Inovadora',
-        link_original: 'https://example.com/vaga5',
-        detalhes: 'Coordenação de projetos de desenvolvimento com equipes distribuídas. Auxílio creche disponível.',
-        is_premium: true,
-        tags: ['Home Office', 'Auxílio Creche', 'Carga Reduzida'],
-        beneficios: ['Auxílio Creche', 'Carga Reduzida', 'Home Office'],
-        created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString() // 10 horas atrás
-    }
-];
 
 /**
  * Inicializa a aplicação
@@ -87,8 +27,7 @@ async function initApp() {
         
         console.log('✅ Supabase inicializado com sucesso');
     } catch (error) {
-        console.warn('⚠️ Não foi possível conectar ao Supabase, usando modo demonstração');
-        isDevMode = true;
+        console.error('❌ Erro ao inicializar Supabase:', error);
     }
     
     // Carrega vagas
@@ -131,7 +70,7 @@ function updateUserInfoBar() {
     if (currentUser) {
         userEmail.textContent = currentUser.email;
         
-        if (isPremium || isDevMode) {
+        if (isPremium) {
             userStatus.textContent = '👑 Premium';
             userStatus.className = 'ml-2 px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-yellow-400 to-orange-500 text-white';
         } else {
@@ -175,7 +114,7 @@ function toggleMobileMenu() {
 }
 
 /**
- * Carrega vagas do banco ou usa dados mockados
+ * Carrega vagas do banco
  */
 async function loadJobs() {
     const loadingState = document.getElementById('loadingState');
@@ -185,20 +124,14 @@ async function loadJobs() {
     emptyState.classList.add('hidden');
     
     try {
-        if (!isDevMode) {
-            const { data, error } = await supabaseClient
-                .from('vagas')
-                .select('*')
-                .order('created_at', { ascending: false });
-            
-            if (error) throw error;
-            
-            allJobs = data || [];
-        } else {
-            // Usa dados mockados em modo demonstração
-            allJobs = MOCK_JOBS;
-            console.log('📦 Usando dados mockados (modo demonstração)');
-        }
+        const { data, error } = await supabaseClient
+            .from('vagas')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        allJobs = data || [];
         
         loadingState.classList.add('hidden');
         
@@ -207,7 +140,7 @@ async function loadJobs() {
         }
     } catch (error) {
         console.error('Erro ao carregar vagas:', error);
-        allJobs = MOCK_JOBS; // Fallback para mockados
+        allJobs = [];
         loadingState.classList.add('hidden');
     }
 }
@@ -223,7 +156,7 @@ async function loadJobsForDashboard() {
     emptyState.classList.add('hidden');
     
     try {
-        if (currentUser && !isDevMode) {
+        if (currentUser) {
             // Usuário autenticado - carrega vagas reais do banco
             const { data, error } = await supabaseClient
                 .from('vagas')
@@ -233,9 +166,14 @@ async function loadJobsForDashboard() {
             if (error) throw error;
             allJobs = data || [];
         } else {
-            // Usuário não autenticado ou modo dev - mostra vagas de exemplo
-            allJobs = MOCK_JOBS;
-            console.log('📦 Mostrando vagas de exemplo (usuário não autenticado)');
+            // Usuário não autenticado - carrega vagas do banco (mostra todas)
+            const { data, error } = await supabaseClient
+                .from('vagas')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            allJobs = data || [];
         }
         
         loadingState.classList.add('hidden');
@@ -248,7 +186,7 @@ async function loadJobsForDashboard() {
         renderInitialJobs();
     } catch (error) {
         console.error('Erro ao carregar vagas:', error);
-        allJobs = MOCK_JOBS;
+        allJobs = [];
         loadingState.classList.add('hidden');
         renderInitialJobs();
     }
@@ -265,7 +203,7 @@ function renderInitialJobs() {
     const sampleJobs = allJobs.slice(0, 3);
     
     sampleJobs.forEach(job => {
-        const isLocked = job.is_premium && !isPremium && !isDevMode;
+        const isLocked = job.is_premium && !isPremium;
         const jobCard = createJobCard(job, isLocked);
         jobsList.appendChild(jobCard);
     });
@@ -336,32 +274,22 @@ async function handleRequiredSignup(event) {
     }
     
     try {
-        if (!isDevMode) {
-            const { data, error } = await supabaseClient.auth.signUp({
-                email,
-                password
-            });
-            
-            if (error) throw error;
-            
-            currentUser = data.user;
-            await loadUserProfile();
-            updateUserInfoBar();
-            
-            showToast('Cadastro realizado! Bem-vinda ao WorkMOM!', 'success');
-            closeRequiredSignupModal();
-            
-            // Recarrega vagas do banco e executa busca
-            await loadJobsForDashboard();
-        } else {
-            // Modo demonstração
-            currentUser = { email: email, id: 'demo-user' };
-            isPremium = isDevMode;
-            updateUserInfoBar();
-            showToast('Cadastro realizado (modo demonstração)', 'success');
-            closeRequiredSignupModal();
-            await loadJobsForDashboard();
-        }
+        const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password
+        });
+        
+        if (error) throw error;
+        
+        currentUser = data.user;
+        await loadUserProfile();
+        updateUserInfoBar();
+        
+        showToast('Cadastro realizado! Bem-vinda ao WorkMOM!', 'success');
+        closeRequiredSignupModal();
+        
+        // Recarrega vagas do banco e executa busca
+        await loadJobsForDashboard();
     } catch (error) {
         console.error('Erro no cadastro:', error);
         showToast('Erro ao criar conta. Tente novamente.', 'error');
@@ -397,7 +325,7 @@ function filterJobs() {
         
         // Paywall: usuários gratuitos só veem vagas com mais de 48h
         let canView = true;
-        if (!isPremium && !isDevMode) {
+        if (!isPremium) {
             const jobDate = new Date(job.created_at);
             canView = jobDate < fortyEightHoursAgo;
         }
@@ -427,7 +355,7 @@ function renderJobs(jobs) {
     }
     
     jobs.forEach(job => {
-        const isLocked = job.is_premium && !isPremium && !isDevMode;
+        const isLocked = job.is_premium && !isPremium;
         const jobCard = createJobCard(job, isLocked);
         jobsList.appendChild(jobCard);
     });
@@ -548,21 +476,15 @@ async function handleLogin(event) {
     const password = document.getElementById('loginPassword').value;
     
     try {
-        if (!isDevMode) {
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email,
-                password
-            });
-            
-            if (error) throw error;
-            
-            currentUser = data.user;
-            await loadUserProfile();
-        } else {
-            // Modo demonstração
-            currentUser = { email: email, id: 'demo-user' };
-            isPremium = isDevMode;
-        }
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+        
+        if (error) throw error;
+        
+        currentUser = data.user;
+        await loadUserProfile();
         
         showToast('Login realizado com sucesso!', 'success');
         showScreen('dashboard');
@@ -588,23 +510,15 @@ async function handleRegister(event) {
     }
     
     try {
-        if (!isDevMode) {
-            const { data, error } = await supabaseClient.auth.signUp({
-                email,
-                password
-            });
-            
-            if (error) throw error;
-            
-            showToast('Cadastro realizado! Verifique seu e-mail para confirmar.', 'success');
-            showScreen('login');
-        } else {
-            // Modo demonstração
-            currentUser = { email: email, id: 'demo-user' };
-            isPremium = isDevMode;
-            showToast('Cadastro realizado (modo demonstração)', 'success');
-            showScreen('dashboard');
-        }
+        const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password
+        });
+        
+        if (error) throw error;
+        
+        showToast('Cadastro realizado! Verifique seu e-mail para confirmar.', 'success');
+        showScreen('login');
     } catch (error) {
         console.error('Erro no cadastro:', error);
         showToast('Erro ao criar conta. Tente novamente.', 'error');
@@ -616,9 +530,7 @@ async function handleRegister(event) {
  */
 async function handleLogout() {
     try {
-        if (!isDevMode) {
-            await supabaseClient.auth.signOut();
-        }
+        await supabaseClient.auth.signOut();
         
         currentUser = null;
         isPremium = false;
@@ -628,25 +540,6 @@ async function handleLogout() {
         console.error('Erro no logout:', error);
         showToast('Erro ao fazer logout', 'error');
     }
-}
-
-/**
- * Alterna modo de desenvolvimento (simular premium)
- */
-function toggleDevMode() {
-    isDevMode = !isDevMode;
-    isPremium = isDevMode;
-    
-    const btn = document.getElementById('devModeBtn');
-    btn.textContent = isDevMode ? 'Desativar Premium' : 'Simular Premium';
-    btn.className = isDevMode 
-        ? 'bg-green-600 px-4 py-2 rounded text-sm hover:bg-green-700'
-        : 'bg-pink-600 px-4 py-2 rounded text-sm hover:bg-pink-700';
-    
-    updateUserInfoBar();
-    filterJobs();
-    
-    showToast(isDevMode ? 'Modo Premium ativado (dev)' : 'Modo Premium desativado', 'success');
 }
 
 /**
@@ -675,7 +568,6 @@ window.handleRegister = handleRegister;
 window.handleLogout = handleLogout;
 window.filterJobs = filterJobs;
 window.openPremiumCheckout = openPremiumCheckout;
-window.toggleDevMode = toggleDevMode;
 window.showRequiredSignupModal = showRequiredSignupModal;
 window.closeRequiredModal = closeRequiredModal;
 window.closeRequiredSignupModal = closeRequiredSignupModal;
