@@ -3,11 +3,15 @@ const { chromium } = require('playwright');
 const { createClient } = require('@supabase/supabase-js');
 
 // Inicializa Supabase com SERVICE_ROLE_KEY (chave master para operações administrativas)
+// Desabilita realtime e db para evitar erros no GitHub Actions
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     {
-        realtime: false // Desabilita realtime para evitar erro no Node.js 20
+        realtime: false,
+        db: {
+            schema: 'public'
+        }
     }
 );
 
