@@ -16,16 +16,15 @@
     <link rel="stylesheet" href="css/styles.css">
     
     <!-- Configuração local (apenas desenvolvimento) -->
-    <script src="config.local.js" onerror="console.warn('config.local.js não encontrado - usando variáveis de ambiente')"></script>
+    <script src="config.local.js" onerror="console.warn('config.local.js não encontrado - usando valores padrão')"></script>
     
-    <!-- Variáveis de ambiente do Vercel (produção) -->
+    <!-- Valores padrão (caso config.local.js não exista) -->
     <script>
-        // Placeholders substituídos pelo Vercel durante o build
         if (!window.SUPABASE_URL) {
-            window.SUPABASE_URL = '%SUPABASE_URL%';
+            window.SUPABASE_URL = 'https://ieuruanmrmewrdlcsepm.supabase.co';
         }
         if (!window.SUPABASE_ANON_KEY) {
-            window.SUPABASE_ANON_KEY = '%SUPABASE_ANON_KEY%';
+            window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlldXJ1YW5tcm1ld3JkbGNzZXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTI3ODEsImV4cCI6MjA5NTY2ODc4MX0.xa8pyLwB96ePj_E9xkN3gyVS5AcV--7Ie3xw3939Mio';
         }
     </script>
 </head>
