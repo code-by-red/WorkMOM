@@ -26,10 +26,14 @@ jobs:
           cd backend
           npm install
       
-      - name: Executar raspador simples de vagas
+      - name: Instalar Playwright
+        run: |
+          npx playwright install --with-deps chromium
+      
+      - name: Executar raspador de vagas
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           cd backend
-          node simple-scraper.js
+          node scraper.js
