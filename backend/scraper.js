@@ -1,11 +1,15 @@
 require('dotenv').config();
-const { chromium } = require('playwright');
+const { chromium } = require('playwright-extra');
+const { PuppeteerExtraPluginStealth } = require('puppeteer-extra-plugin-stealth');
+
+// Configura stealth plugin
+chromium.use(PuppeteerExtraPluginStealth());
 
 // Configuração do Supabase
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Função helper para fazer requisições ao Supabase REST API (evita erro WebSocket)
+// Função helper para fazer requisições ao Supabase REST API
 async function supabaseRequest(table, method = 'GET', data = null) {
     const url = `${SUPABASE_URL}/rest/v1/${table}`;
     const headers = {
@@ -28,28 +32,27 @@ async function supabaseRequest(table, method = 'GET', data = null) {
     return response.json();
 }
 
-// Termos de busca para vagas home office
-const SEARCH_TERMS = [
-    'Home Office',
-    'Remoto',
-    'Meio Período',
-    'Auxílio Creche',
-    'Trabalho Remoto',
-    'Homeoffice'
-];
-
 // Termos que classificam uma vaga como premium
 const PREMIUM_KEYWORDS = [
     'auxílio creche',
+    'auxilio babá',
     'horário flexível',
-    'auxílio babá',
-    'carga reduzida',
+    'escala reduzida',
+    'part-time',
+    'meio período',
     'flexível',
     'creche',
     'babá',
-    'part-time',
-    'meio período'
+    'carga reduzida'
 ];
+
+/**
+ * Gera delay aleatório entre 2 e 5 segundos
+ */
+function randomDelay() {
+    const delay = Math.floor(Math.random() * 3000) + 2000;
+    return new Promise(resolve => setTimeout(resolve, delay));
+}
 
 /**
  * Classifica se uma vaga é premium baseado na descrição
@@ -64,52 +67,29 @@ function classifyAsPremium(description) {
 }
 
 /**
- * Extrai informações de uma vaga de uma página
+ * Verifica se a vaga já existe no banco
  */
-async function extractJobInfo(page, url) {
+async function jobExists(linkOriginal) {
     try {
-        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-        
-        // Tenta extrair título (seletores comuns)
-        const title = await page.locator('h1, .job-title, [class*="title"]').first().textContent().catch(() => 'Vaga não identificada');
-        
-        // Tenta extrair empresa
-        const company = await page.locator('.company-name, [class*="company"], [data-company]').first().textContent().catch(() => 'Empresa não identificada');
-        
-        // Tenta extrair descrição
-        const description = await page.locator('.job-description, [class*="description"], .description').first().textContent().catch(() => '');
-        
-        // Tenta extrair benefícios
-        const benefits = await page.locator('.benefits, [class*="benefit"]').allTextContents().catch(() => []);
-        
-        // Classifica como premium
-        const isPremium = classifyAsPremium(description);
-        
-        // Extrai tags da descrição
-        const tags = [];
-        SEARCH_TERMS.forEach(term => {
-            if (description.toLowerCase().includes(term.toLowerCase())) {
-                tags.push(term);
+        const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/vagas?link_original=eq.${encodeURIComponent(linkOriginal)}&select=id`,
+            {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                }
             }
-        });
-        
-        return {
-            titulo: title?.trim() || 'Vaga não identificada',
-            empresa: company?.trim() || 'Empresa não identificada',
-            link_original: url,
-            detalhes: description?.trim() || '',
-            is_premium: isPremium,
-            tags: tags,
-            beneficios: benefits.map(b => b.trim()).filter(b => b)
-        };
+        );
+        const data = await response.json();
+        return data && data.length > 0;
     } catch (error) {
-        console.error(`Erro ao extrair informações de ${url}:`, error.message);
-        return null;
+        console.error('Erro ao verificar duplicidade:', error);
+        return false;
     }
 }
 
 /**
- * Salva ou atualiza uma vaga no Supabase usando upsert
+ * Salva vaga no Supabase
  */
 async function saveJobToDatabase(jobInfo) {
     try {
@@ -125,7 +105,7 @@ async function saveJobToDatabase(jobInfo) {
         });
         
         if (response.error) {
-            console.error('Erro ao salvar vaga no banco:', response.error);
+            console.error('Erro ao salvar vaga:', response.error);
             return false;
         }
         
@@ -138,87 +118,193 @@ async function saveJobToDatabase(jobInfo) {
 }
 
 /**
- * Busca vagas no LinkedIn (simulado - adaptar para estrutura real)
+ * Busca vagas na API pública da Gupy
  */
-async function scrapeLinkedIn(browser) {
-    console.log('🔍 Buscando vagas no LinkedIn...');
+async function scrapeGupyAPI() {
+    console.log('🔍 Buscando vagas na API da Gupy...');
     
-    const page = await browser.newPage();
-    
-    // URLs de busca simuladas (adaptar para URLs reais)
-    const searchUrls = SEARCH_TERMS.map(term => 
-        `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(term)}&location=Brasil&f_WT=2&f_JT=F`
-    );
-    
-    for (const url of searchUrls.slice(0, 2)) { // Limita para 2 buscas no exemplo
-        try {
-            await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-            
-            // Simula extração de links de vagas (adaptar seletores reais)
-            const jobLinks = await page.locator('.job-card-container a').all().catch(() => []);
-            
-            for (const link of jobLinks.slice(0, 5)) { // Limita para 5 vagas por busca
-                try {
-                    const href = await link.getAttribute('href').catch(() => null);
-                    if (href) {
-                        const fullUrl = href.startsWith('http') ? href : `https://www.linkedin.com${href}`;
-                        const jobInfo = await extractJobInfo(page, fullUrl);
-                        if (jobInfo) {
-                            await saveJobToDatabase(jobInfo);
-                        }
-                    }
-                } catch (error) {
-                    console.error('Erro ao processar link de vaga:', error.message);
-                }
-            }
-        } catch (error) {
-            console.error('Erro na busca do LinkedIn:', error.message);
+    try {
+        const response = await fetch('https://portal.api.gupy.io/api/v1/jobs?limit=50&workplaceTypes=remote');
+        const data = await response.json();
+        
+        if (!data || !data.data) {
+            console.log('⚠️ Nenhuma vaga encontrada na Gupy');
+            return 0;
         }
+        
+        let savedCount = 0;
+        const jobs = data.data.slice(0, 30); // Limite de 30 vagas
+        
+        for (const job of jobs) {
+            await randomDelay();
+            
+            const jobInfo = {
+                titulo: job.title || 'Vaga não identificada',
+                empresa: job.companyName || 'Empresa não identificada',
+                link_original: job.url || job.jobUrl || '',
+                detalhes: job.description || '',
+                is_premium: classifyAsPremium(job.description),
+                tags: ['Remoto', 'Home Office'],
+                beneficios: []
+            };
+            
+            // Verifica duplicidade
+            const exists = await jobExists(jobInfo.link_original);
+            if (!exists && jobInfo.link_original) {
+                const saved = await saveJobToDatabase(jobInfo);
+                if (saved) savedCount++;
+            }
+        }
+        
+        console.log(`✅ Gupy: ${savedCount} vagas salvas`);
+        return savedCount;
+    } catch (error) {
+        console.error('Erro ao buscar Gupy:', error.message);
+        return 0;
     }
-    
-    await page.close();
 }
 
 /**
- * Busca vagas na Gupy (simulado)
+ * Busca vagas no Google Jobs
  */
-async function scrapeGupy(browser) {
-    console.log('🔍 Buscando vagas na Gupy...');
+async function scrapeGoogleJobs() {
+    console.log('🔍 Buscando vagas no Google Jobs...');
     
-    const page = await browser.newPage();
+    const browser = await chromium.launch({ 
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
     
-    // URLs de busca simuladas
-    const searchUrls = SEARCH_TERMS.map(term => 
-        `https://portal.gupy.io/job-search?q=${encodeURIComponent(term)}`
-    );
-    
-    for (const url of searchUrls.slice(0, 2)) {
-        try {
-            await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+    try {
+        const page = await browser.newPage();
+        
+        // Configura stealth para evitar detecção
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        
+        const searchTerms = ['vagas home office assistente', 'atendimento meio periodo'];
+        let savedCount = 0;
+        
+        for (const term of searchTerms) {
+            await randomDelay();
             
-            // Simula extração de links (adaptar seletores reais)
-            const jobLinks = await page.locator('a[href*="/job/"]').all().catch(() => []);
+            const url = `https://www.google.com/search?q=${encodeURIComponent(term)}&ibp=htl;jobs&uule=0`;
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
             
-            for (const link of jobLinks.slice(0, 5)) {
+            // Tenta extrair links de vagas (seletores genéricos)
+            const jobLinks = await page.locator('a[href*="job"]').all().catch(() => []);
+            
+            for (const link of jobLinks.slice(0, 15)) {
+                await randomDelay();
+                
                 try {
                     const href = await link.getAttribute('href').catch(() => null);
-                    if (href) {
-                        const fullUrl = href.startsWith('http') ? href : `https://portal.gupy.io${href}`;
-                        const jobInfo = await extractJobInfo(page, fullUrl);
-                        if (jobInfo) {
-                            await saveJobToDatabase(jobInfo);
+                    if (href && href.startsWith('http')) {
+                        const jobInfo = {
+                            titulo: await link.textContent().catch(() => 'Vaga não identificada'),
+                            empresa: 'Google Jobs',
+                            link_original: href,
+                            detalhes: `Vaga encontrada para: ${term}`,
+                            is_premium: classifyAsPremium(term),
+                            tags: ['Remoto', 'Home Office'],
+                            beneficios: []
+                        };
+                        
+                        const exists = await jobExists(jobInfo.link_original);
+                        if (!exists) {
+                            const saved = await saveJobToDatabase(jobInfo);
+                            if (saved) savedCount++;
                         }
                     }
                 } catch (error) {
-                    console.error('Erro ao processar link de vaga:', error.message);
+                    // Ignora erros individuais
                 }
             }
-        } catch (error) {
-            console.error('Erro na busca da Gupy:', error.message);
         }
+        
+        await page.close();
+        console.log(`✅ Google Jobs: ${savedCount} vagas salvas`);
+        return savedCount;
+    } catch (error) {
+        console.error('Erro ao buscar Google Jobs:', error.message);
+        await browser.close();
+        return 0;
+    } finally {
+        await browser.close();
     }
+}
+
+/**
+ * Busca vagas no Portal Remotar
+ */
+async function scrapeRemotar() {
+    console.log('🔍 Buscando vagas no Portal Remotar...');
     
-    await page.close();
+    const browser = await chromium.launch({ 
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    
+    try {
+        const page = await browser.newPage();
+        
+        // Configura stealth
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        
+        await randomDelay();
+        
+        await page.goto('https://remotar.com.br/vagas', { 
+            waitUntil: 'domcontentloaded', 
+            timeout: 30000 
+        });
+        
+        // Extrai vagas (seletores específicos do Remotar)
+        const jobCards = await page.locator('.job-card, [class*="job"]').all().catch(() => []);
+        
+        let savedCount = 0;
+        
+        for (const card of jobCards.slice(0, 30)) {
+            await randomDelay();
+            
+            try {
+                const title = await card.locator('h2, h3, [class*="title"]').first().textContent().catch(() => 'Vaga não identificada');
+                const company = await card.locator('[class*="company"], [class*="empresa"]').first().textContent().catch(() => 'Empresa não identificada');
+                const description = await card.locator('[class*="description"], [class*="desc"]').first().textContent().catch(() => '');
+                const link = await card.locator('a').first().getAttribute('href').catch(() => null);
+                
+                if (link) {
+                    const fullUrl = link.startsWith('http') ? link : `https://remotar.com.br${link}`;
+                    
+                    const jobInfo = {
+                        titulo: title?.trim() || 'Vaga não identificada',
+                        empresa: company?.trim() || 'Empresa não identificada',
+                        link_original: fullUrl,
+                        detalhes: description?.trim() || '',
+                        is_premium: classifyAsPremium(description),
+                        tags: ['Remoto', 'Home Office'],
+                        beneficios: []
+                    };
+                    
+                    const exists = await jobExists(jobInfo.link_original);
+                    if (!exists) {
+                        const saved = await saveJobToDatabase(jobInfo);
+                        if (saved) savedCount++;
+                    }
+                }
+            } catch (error) {
+                // Ignora erros individuais
+            }
+        }
+        
+        await page.close();
+        console.log(`✅ Remotar: ${savedCount} vagas salvas`);
+        return savedCount;
+    } catch (error) {
+        console.error('Erro ao buscar Remotar:', error.message);
+        await browser.close();
+        return 0;
+    } finally {
+        await browser.close();
+    }
 }
 
 /**
@@ -227,24 +313,33 @@ async function scrapeGupy(browser) {
 async function main() {
     console.log('🚀 Iniciando raspador de vagas WorkMOM...');
     
-    // Inicia navegador
-    const browser = await chromium.launch({ 
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    let totalSaved = 0;
     
-    try {
-        // Executa buscas em diferentes plataformas
-        await scrapeLinkedIn(browser);
-        await scrapeGupy(browser);
-        
-        console.log('✅ Raspagem concluída com sucesso!');
-    } catch (error) {
-        console.error('❌ Erro durante a raspagem:', error);
-    } finally {
-        await browser.close();
-    }
+    // Executa raspagem de cada fonte
+    totalSaved += await scrapeGupyAPI();
+    totalSaved += await scrapeGoogleJobs();
+    totalSaved += await scrapeRemotar();
+    
+    console.log(`✅ Raspagem concluída! Total de vagas salvas: ${totalSaved}`);
 }
 
-// Executa o raspador
-main().catch(console.error);
+/**
+ * Executa raspagem contínua com intervalo de 12 horas
+ */
+async function runContinuous() {
+    console.log('🔄 Iniciando modo contínuo (intervalo de 12 horas)...');
+    
+    // Executa imediatamente
+    await main();
+    
+    // Configura intervalo de 12 horas
+    const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+    setInterval(main, TWELVE_HOURS);
+}
+
+// Verifica se deve rodar em modo contínuo
+if (process.env.CONTINUOUS_MODE === 'true') {
+    runContinuous().catch(console.error);
+} else {
+    main().catch(console.error);
+}
