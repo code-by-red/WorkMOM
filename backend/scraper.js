@@ -1,19 +1,32 @@
 require('dotenv').config();
 const { chromium } = require('playwright');
-const { createClient } = require('@supabase/supabase-js');
 
-// Inicializa Supabase com SERVICE_ROLE_KEY (chave master para operações administrativas)
-// Desabilita realtime e db para evitar erros no GitHub Actions
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    {
-        realtime: false,
-        db: {
-            schema: 'public'
-        }
+// Configuração do Supabase
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Função helper para fazer requisições ao Supabase REST API (evita erro WebSocket)
+async function supabaseRequest(table, method = 'GET', data = null) {
+    const url = `${SUPABASE_URL}/rest/v1/${table}`;
+    const headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=ignore-duplicates'
+    };
+
+    const options = {
+        method,
+        headers
+    };
+
+    if (data) {
+        options.body = JSON.stringify(data);
     }
-);
+
+    const response = await fetch(url, options);
+    return response.json();
+}
 
 // Termos de busca para vagas home office
 const SEARCH_TERMS = [
@@ -100,23 +113,19 @@ async function extractJobInfo(page, url) {
  */
 async function saveJobToDatabase(jobInfo) {
     try {
-        const { data, error } = await supabase
-            .from('vagas')
-            .upsert({
-                link_original: jobInfo.link_original,
-                titulo: jobInfo.titulo,
-                empresa: jobInfo.empresa,
-                detalhes: jobInfo.detalhes,
-                is_premium: jobInfo.is_premium,
-                tags: jobInfo.tags,
-                beneficios: jobInfo.beneficios,
-                created_at: new Date().toISOString()
-            }, {
-                onConflict: 'link_original'
-            });
+        const response = await supabaseRequest('vagas', 'POST', {
+            link_original: jobInfo.link_original,
+            titulo: jobInfo.titulo,
+            empresa: jobInfo.empresa,
+            detalhes: jobInfo.detalhes,
+            is_premium: jobInfo.is_premium,
+            tags: jobInfo.tags,
+            beneficios: jobInfo.beneficios,
+            created_at: new Date().toISOString()
+        });
         
-        if (error) {
-            console.error('Erro ao salvar vaga no banco:', error);
+        if (response.error) {
+            console.error('Erro ao salvar vaga no banco:', response.error);
             return false;
         }
         
