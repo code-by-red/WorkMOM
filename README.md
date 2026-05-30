@@ -40,7 +40,7 @@ Plataforma exclusiva de vagas home office para mães solo com automação de pag
 2. Execute o script SQL no Supabase: `database/schema.sql`
 3. Instale as dependências do backend: `cd backend && npm install`
 4. Configure a Edge Function do Supabase (veja `supabase/functions/kiwify-webhook/README.md`)
-5. Execute o raspador: `node backend/scraper.js`
+5. Configure automação do raspador (GitHub Actions ou Task Scheduler - veja `GITHUB_ACTIONS.md` ou `TASK_SCHEDULER.md`)
 6. Abra o frontend no navegador: `index.html` ou use `node server.js`
 
 ## � Links Kiwify
