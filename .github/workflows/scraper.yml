@@ -26,10 +26,6 @@ jobs:
           cd backend
           npm install
       
-      - name: Instalar Playwright
-        run: |
-          npx playwright install --with-deps chromium
-      
       - name: Executar raspador de vagas
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
