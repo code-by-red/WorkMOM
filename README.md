@@ -45,7 +45,24 @@ Plataforma exclusiva de vagas home office para mães solo com automação de pag
 
 ## 🤖 Raspador de Vagas
 
-O projeto inclui um raspador (`backend/scraper.js`) que usa Playwright para buscar vagas em sites como LinkedIn e Gupy.
+O projeto inclui um raspador profissional (`backend/scraper.js`) que busca vagas em fontes reais sem proteções anti-bot pesadas:
+
+**Fontes de Dados:**
+- **Gupy API**: API pública JSON (sem bloqueios)
+- **Google Jobs**: Busca estruturada via URL
+- **Portal Remotar**: HTML estruturado e amigável
+
+**Recursos Anti-Bot:**
+- `playwright-extra` com plugin stealth
+- User-Agent mimetizando Chrome Windows 11
+- Delays aleatórios (2-5 segundos) entre ações
+- Processamento síncrono (sem requisições simultâneas)
+
+**Regras de Negócio:**
+- Limite de 30 vagas por execução
+- Classificação automática premium (palavras-chave específicas)
+- Verificação de duplicidade antes de salvar
+- Intervalo de 12 horas para modo contínuo
 
 **Para executar localmente:**
 ```bash
@@ -54,7 +71,10 @@ npm install
 node scraper.js
 ```
 
-**Nota:** O raspador pode encontrar proteções anti-bot. Para produção, considere usar APIs de vagas ou adicionar vagas manualmente.
+**Para executar em modo contínuo:**
+```bash
+CONTINUOUS_MODE=true node backend/scraper.js
+```
 
 ## � Links Kiwify
 
