@@ -43,6 +43,15 @@ Plataforma exclusiva de vagas home office para mães solo com automação de pag
 5. Configure automação do raspador (GitHub Actions ou Task Scheduler - veja `GITHUB_ACTIONS.md` ou `TASK_SCHEDULER.md`)
 6. Abra o frontend no navegador: `index.html` ou use `node server.js`
 
+## 🤖 Raspador de Vagas
+
+O projeto inclui dois raspadores:
+
+- **simple-scraper.js**: Raspador simples que usa RSS feeds (recomendado para produção)
+- **scraper.js**: Raspador avançado com Playwright (requer mais configuração)
+
+O GitHub Actions usa o raspador simples por padrão para evitar bloqueios anti-bot.
+
 ## � Links Kiwify
 
 - **Sales Page:** https://kiwify.app/OqYoemT
