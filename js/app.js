@@ -1,9 +1,9 @@
 // Importa Supabase
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-// Configuração do Supabase
-const SUPABASE_URL = 'https://ieuruanmrmewrdlcsepm.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlldXJ1YW5tcm1ld3JkbGNzZXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTI3ODEsImV4cCI6MjA5NTY2ODc4MX0.xa8pyLwB96ePj_E9xkN3gyVS5AcV--7Ie3xw3939Mio';
+// Configuração do Supabase (injetada via variáveis de ambiente)
+const SUPABASE_URL = window.SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
 
 // Inicializa cliente Supabase
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
