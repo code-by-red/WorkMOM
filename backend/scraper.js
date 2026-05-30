@@ -176,10 +176,11 @@ async function scrapeGoogleJobs() {
     });
     
     try {
-        const page = await browser.newPage();
+        const context = await browser.newContext({
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        });
         
-        // Configura stealth para evitar detecção
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        const page = await context.newPage();
         
         const searchTerms = ['vagas home office assistente', 'atendimento meio periodo'];
         let savedCount = 0;
@@ -222,6 +223,7 @@ async function scrapeGoogleJobs() {
         }
         
         await page.close();
+        await context.close();
         console.log(`✅ Google Jobs: ${savedCount} vagas salvas`);
         return savedCount;
     } catch (error) {
@@ -249,10 +251,11 @@ async function scrapeRemotar() {
     });
     
     try {
-        const page = await browser.newPage();
+        const context = await browser.newContext({
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        });
         
-        // Configura stealth
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        const page = await context.newPage();
         
         await randomDelay();
         
@@ -300,6 +303,7 @@ async function scrapeRemotar() {
         }
         
         await page.close();
+        await context.close();
         console.log(`✅ Remotar: ${savedCount} vagas salvas`);
         return savedCount;
     } catch (error) {
