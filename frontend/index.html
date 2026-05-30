@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkMOM - Vagas para Mães Solo</title>
+    <link rel="icon" href="data:,">
+    
+    <!-- Tailwind CSS CDN (Desenvolvimento apenas - usar npm install em produção) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- CSS Customizado -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gradient-to-br from-pink-50 to-purple-50 min-h-screen">
+    
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-briefcase text-pink-600 text-2xl"></i>
+                <span class="text-xl font-bold text-gray-800">WorkMOM</span>
+            </div>
+            
+            <div class="hidden md:flex space-x-6">
+                <button onclick="showScreen('landing')" class="text-gray-600 hover:text-pink-600 transition">Início</button>
+                <button onclick="showScreen('login')" class="text-gray-600 hover:text-pink-600 transition">Entrar</button>
+                <button onclick="showScreen('register')" class="text-gray-600 hover:text-pink-600 transition">Cadastrar</button>
+                <button onclick="showScreen('dashboard')" class="text-gray-600 hover:text-pink-600 transition">Vagas</button>
+            </div>
+            
+            <button class="md:hidden text-gray-600" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </nav>
+        
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white border-t">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-2">
+                <button onclick="showScreen('landing')" class="text-left py-2 text-gray-600 hover:text-pink-600">Início</button>
+                <button onclick="showScreen('login')" class="text-left py-2 text-gray-600 hover:text-pink-600">Entrar</button>
+                <button onclick="showScreen('register')" class="text-left py-2 text-gray-600 hover:text-pink-600">Cadastrar</button>
+                <button onclick="showScreen('dashboard')" class="text-left py-2 text-gray-600 hover:text-pink-600">Vagas</button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main id="mainContent">
+        
+        <!-- Landing Page Screen -->
+        <section id="landingScreen" class="screen">
+            <div class="container mx-auto px-4 py-16">
+                <div class="text-center max-w-4xl mx-auto">
+                    <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-6">
+                        Vagas <span class="text-pink-600">Home Office</span> Exclusivas para Mães Solo
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-8">
+                        Encontre oportunidades de trabalho remoto que respeitam sua rotina. 
+                        Vagas com benefícios como auxílio creche, horário flexível e carga reduzida.
+                    </p>
+                    <div class="flex flex-col md:flex-row gap-4 justify-center">
+                        <button onclick="showScreen('register')" class="bg-pink-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-pink-700 transition transform hover:scale-105">
+                            <i class="fas fa-rocket mr-2"></i>Começar Gratuitamente
+                        </button>
+                        <button onclick="showScreen('dashboard')" class="bg-white text-pink-600 px-8 py-4 rounded-lg font-semibold border-2 border-pink-600 hover:bg-pink-50 transition">
+                            <i class="fas fa-search mr-2"></i>Ver Vagas
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Features -->
+                <div class="grid md:grid-cols-3 gap-8 mt-16">
+                    <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition">
+                        <div class="text-pink-600 text-4xl mb-4">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">100% Home Office</h3>
+                        <p class="text-gray-600">Todas as vagas são remotas, permitindo que você trabalhe de casa com flexibilidade.</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition">
+                        <div class="text-pink-600 text-4xl mb-4">
+                            <i class="fas fa-baby"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Benefícios Familiares</h3>
+                        <p class="text-gray-600">Vagas com auxílio creche, babá e outros benefícios pensados para mães.</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition">
+                        <div class="text-pink-600 text-4xl mb-4">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Horário Flexível</h3>
+                        <p class="text-gray-600">Empresas que entendem sua rotina e oferecem horários adaptáveis.</p>
+                    </div>
+                </div>
+                
+                <!-- Premium CTA -->
+                <div class="bg-gradient-to-r from-pink-600 to-purple-600 rounded-2xl p-8 mt-16 text-white text-center">
+                    <h2 class="text-3xl font-bold mb-4">Acesso Premium a Apenas R$ 14,90/mês</h2>
+                    <p class="text-lg mb-6">Vagas exclusivas e atualizações em tempo real. Candidature-se antes de todo mundo!</p>
+                    <button onclick="openPremiumCheckout()" class="bg-white text-pink-600 px-8 py-4 rounded-lg font-bold hover:bg-pink-50 transition transform hover:scale-105">
+                        <i class="fas fa-crown mr-2"></i>Assinar Premium
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Login Screen -->
+        <section id="loginScreen" class="screen hidden">
+            <div class="container mx-auto px-4 py-16">
+                <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                        <i class="fas fa-sign-in-alt text-pink-600 mr-2"></i>Entrar
+                    </h2>
+                    <form id="loginForm" onsubmit="handleLogin(event)">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2">E-mail</label>
+                            <input type="email" id="loginEmail" required 
+                                class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-600">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 mb-2">Senha</label>
+                            <input type="password" id="loginPassword" required 
+                                class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-600">
+                        </div>
+                        <button type="submit" class="w-full bg-pink-600 text-white py-3 rounded-lg font-semibold hover:bg-pink-700 transition">
+                            Entrar
+                        </button>
+                    </form>
+                    <p class="text-center mt-4 text-gray-600">
+                        Não tem conta? <button onclick="showScreen('register')" class="text-pink-600 hover:underline">Cadastre-se</button>
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Register Screen -->
+        <section id="registerScreen" class="screen hidden">
+            <div class="container mx-auto px-4 py-16">
+                <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                        <i class="fas fa-user-plus text-pink-600 mr-2"></i>Criar Conta
+                    </h2>
+                    <form id="registerForm" onsubmit="handleRegister(event)">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2">E-mail</label>
+                            <input type="email" id="registerEmail" required 
+                                class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-600">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2">Senha</label>
+                            <input type="password" id="registerPassword" required minlength="6"
+                                class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-600">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 mb-2">Confirmar Senha</label>
+                            <input type="password" id="registerPasswordConfirm" required minlength="6"
+                                class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-600">
+                        </div>
+                        <button type="submit" class="w-full bg-pink-600 text-white py-3 rounded-lg font-semibold hover:bg-pink-700 transition">
+                            Criar Conta
+                        </button>
+                    </form>
+                    <p class="text-center mt-4 text-gray-600">
+                        Já tem conta? <button onclick="showScreen('login')" class="text-pink-600 hover:underline">Entrar</button>
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Dashboard Screen -->
+        <section id="dashboardScreen" class="screen hidden">
+            <div class="container mx-auto px-4 py-8">
+                <!-- User Info Bar -->
+                <div id="userInfoBar" class="bg-white rounded-xl shadow-md p-4 mb-6 flex justify-between items-center">
+                    <div>
+                        <span id="userEmail" class="text-gray-600"></span>
+                        <span id="userStatus" class="ml-2 px-3 py-1 rounded-full text-sm font-semibold"></span>
+                    </div>
+                    <button onclick="handleLogout()" class="text-gray-600 hover:text-pink-600">
+                        <i class="fas fa-sign-out-alt mr-1"></i>Sair
+                    </button>
+                </div>
+                
+                <!-- Search and Filters -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <input type="text" id="searchInput" placeholder="Buscar vagas..." 
+                            class="flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-600"
+                            oninput="filterJobs()">
+                        <select id="filterPremium" onchange="filterJobs()" 
+                            class="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-600">
+                            <option value="all">Todas as Vagas</option>
+                            <option value="premium">Apenas Premium</option>
+                            <option value="free">Apenas Gratuitas</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Jobs List -->
+                <div id="jobsList" class="grid gap-6">
+                    <!-- Jobs will be loaded here dynamically -->
+                </div>
+                
+                <!-- Loading State -->
+                <div id="loadingState" class="text-center py-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-pink-600"></i>
+                    <p class="text-gray-600 mt-4">Carregando vagas...</p>
+                </div>
+                
+                <!-- Empty State -->
+                <div id="emptyState" class="hidden text-center py-12">
+                    <i class="fas fa-briefcase text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-600 text-xl">Nenhuma vaga encontrada</p>
+                </div>
+            </div>
+            
+            <!-- Dev Mode Button (para demonstração) -->
+            <div id="devModePanel" class="fixed bottom-4 right-4 bg-gray-800 text-white p-4 rounded-lg shadow-xl">
+                <p class="text-sm mb-2">Modo Desenvolvimento</p>
+                <button onclick="toggleDevMode()" id="devModeBtn" class="bg-pink-600 px-4 py-2 rounded text-sm hover:bg-pink-700">
+                    Simular Premium
+                </button>
+            </div>
+        </section>
+        
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 WorkMOM. Todos os direitos reservados.</p>
+            <p class="text-gray-400 mt-2">Feito com <i class="fas fa-heart text-pink-500"></i> para mães solo</p>
+        </div>
+    </footer>
+    
+    <!-- Modal de Cadastro Obrigatório -->
+    <div id="requiredSignupModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-lock text-white text-2xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Crie sua conta gratuita</h3>
+                <p class="text-gray-600">Liberar o mecanismo de busca e acessar centenas de vagas home office atualizadas hoje.</p>
+            </div>
+            
+            <form id="requiredSignupForm" onsubmit="handleRequiredSignup(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2 font-medium">E-mail</label>
+                    <input type="email" id="requiredSignupEmail" required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                        placeholder="seu@email.com">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2 font-medium">Senha</label>
+                    <input type="password" id="requiredSignupPassword" required minlength="6"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                        placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2 font-medium">Confirmar Senha</label>
+                    <input type="password" id="requiredSignupPasswordConfirm" required minlength="6"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                        placeholder="Repita a senha">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-600 transition transform hover:scale-105">
+                    <i class="fas fa-rocket mr-2"></i>Criar Minha Conta Grátis
+                </button>
+            </form>
+            
+            <p class="text-center mt-4 text-gray-500 text-sm">
+                Já tem conta? <button onclick="closeRequiredModal(); showScreen('login')" class="text-pink-600 hover:underline font-medium">Entrar</button>
+            </p>
+            
+            <button onclick="closeRequiredModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- JavaScript Application -->
+    <script type="module" src="js/app.js"></script>
+    
+</body>
+</html>
