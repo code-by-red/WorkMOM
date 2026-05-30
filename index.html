@@ -21,10 +21,10 @@
     <!-- Valores padrão (caso config.local.js não exista) -->
     <script>
         if (!window.SUPABASE_URL) {
-            window.SUPABASE_URL = ''; // Configure no config.local.js
+            window.SUPABASE_URL = '__SUPABASE_URL__'; // Substituído pelo build script
         }
         if (!window.SUPABASE_ANON_KEY) {
-            window.SUPABASE_ANON_KEY = ''; // Configure no config.local.js
+            window.SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__'; // Substituído pelo build script
         }
     </script>
 </head>
