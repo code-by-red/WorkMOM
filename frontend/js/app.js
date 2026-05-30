@@ -534,8 +534,7 @@ function handleJobClick(url) {
  * Abre checkout da Kiwify
  */
 function openPremiumCheckout() {
-    // Substitua com seu link real de checkout da Kiwify
-    const checkoutUrl = 'https://kiwify.com.br/seu-link-de-checkout-aqui';
+    const checkoutUrl = 'https://pay.kiwify.com.br/BFdGdnt';
     window.open(checkoutUrl, '_blank');
 }
 

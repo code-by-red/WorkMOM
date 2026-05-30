@@ -38,7 +38,12 @@ Plataforma exclusiva de vagas home office para mães solo com automação de pag
 5. Execute o raspador: `node backend/scraper.js`
 6. Abra o frontend no navegador: `frontend/index.html`
 
-## 💎 Planos
+## � Links Kiwify
+
+- **Sales Page:** https://kiwify.app/OqYoemT
+- **Assinatura WorkMOM:** https://pay.kiwify.com.br/BFdGdnt
+
+## �💎 Planos
 
 - **Gratuito**: Acesso a vagas com mais de 48 horas
 - **Premium (R$ 14,90)**: Acesso imediato a todas as vagas, incluindo as mais recentes
