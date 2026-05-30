@@ -1,9 +1,5 @@
 require('dotenv').config();
-const { chromium } = require('playwright-extra');
-const { PuppeteerExtraPluginStealth } = require('puppeteer-extra-plugin-stealth');
-
-// Configura stealth plugin
-chromium.use(PuppeteerExtraPluginStealth());
+const { chromium } = require('playwright');
 
 // Configuração do Supabase
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -172,7 +168,11 @@ async function scrapeGoogleJobs() {
     
     const browser = await chromium.launch({ 
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-blink-features=AutomationControlled'
+        ]
     });
     
     try {
@@ -241,7 +241,11 @@ async function scrapeRemotar() {
     
     const browser = await chromium.launch({ 
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-blink-features=AutomationControlled'
+        ]
     });
     
     try {
